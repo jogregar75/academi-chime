@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { isAdminUser } from "@/lib/admin-auth";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -17,25 +18,52 @@ const AdminLogin = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) navigate("/admin");
-    };
-    checkSession();
+      if (!session) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/admin");
+      const isAdmin = await isAdminUser(session.user.id);
+      if (isAdmin) {
+        navigate("/admin");
+      } else {
+        await supabase.auth.signOut();
+      }
+    };
+    void checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) return;
+
+      const isAdmin = await isAdminUser(session.user.id);
+      if (isAdmin) {
+        navigate("/admin");
+      }
     });
+
     return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+
     if (error) {
+      setLoading(false);
       toast({ title: "Error de acceso", description: "Credenciales incorrectas. Intente de nuevo.", variant: "destructive" });
+      return;
     }
+
+    const isAdmin = data.user ? await isAdminUser(data.user.id) : false;
+    setLoading(false);
+
+    if (!isAdmin) {
+      await supabase.auth.signOut();
+      toast({ title: "Acceso denegado", description: "Este usuario no tiene permisos de administrador.", variant: "destructive" });
+      return;
+    }
+
+    navigate("/admin");
   };
 
   return (

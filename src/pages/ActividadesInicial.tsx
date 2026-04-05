@@ -1,9 +1,9 @@
-import ActivitiesSection from "@/components/ActivitiesSectionInicial";
+import SchoolActivitiesSection from "@/components/SchoolActivitiesSection";
 
 export default function Actividades() {
   return (
     <div className="pt-16 md:pt-12">
-      <ActivitiesSection />
+      <SchoolActivitiesSection level="inicial" />
     </div>
   );
 }

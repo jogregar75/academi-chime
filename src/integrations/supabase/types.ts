@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_files: {
+        Row: {
+          activity_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_files_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "school_activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_activities: {
+        Row: {
+          activity_date: string
+          created_at: string
+          description: string | null
+          id: string
+          level: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          level: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       weekly_tasks: {
         Row: {
           attachment_url: string | null

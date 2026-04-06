@@ -1,9 +1,9 @@
-import SchoolActivitiesSection from "@/components/SchoolActivitiesSection";
+import WeeklyTasksSection from "@/components/WeeklyTasksSection";
 
-export default function Actividades() {
+export default function ActividadesInicial() {
   return (
     <div className="pt-16 md:pt-12">
-      <SchoolActivitiesSection level="inicial" />
+      <WeeklyTasksSection filterLevel="inicial" />
     </div>
   );
 }

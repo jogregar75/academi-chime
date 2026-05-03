@@ -6,7 +6,13 @@ import LogoCDB from "@/assets/LogoCDB.png";
 
 const navLinks = [
   { label: "Inicio", href: "/" },
-  { label: "Nosotros", href: "/nosotros" },
+  {
+    label: "Nosotros",
+    submenu: [
+      { label: "Institución", href: "/nosotros" },
+      { label: "Autoridades", href: "/nosotros/autoridades" },
+    ],
+  },
   { label: "Niveles", href: "/niveles" },
     { label: "Actividades", 
     submenu: [

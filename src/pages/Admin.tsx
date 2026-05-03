@@ -15,6 +15,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { isAdminUser } from "@/lib/admin-auth";
 import { formatFileSize } from "@/lib/activity-files";
 import SchoolActivitiesManager from "@/components/admin/SchoolActivitiesManager";
+import AuthoritiesManager from "@/components/admin/AuthoritiesManager";
 
 type WeeklyTask = Tables<"weekly_tasks">;
 
@@ -393,6 +394,7 @@ const Admin = () => {
         </section>
 
         <SchoolActivitiesManager />
+        <AuthoritiesManager />
       </main>
     </div>
   );

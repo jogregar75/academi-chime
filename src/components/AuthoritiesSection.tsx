@@ -51,7 +51,7 @@ const AuthoritiesSection = () => {
             <Loader2 className="w-8 h-8 animate-spin text-accent" />
           </div>
         ) : (
-          {(() => {
+          (() => {
             const isGerencia = (r: string) => /gerente\s+general/i.test(r);
             const gerentes = authorities.filter((a) => isGerencia(a.role));
             const resto = authorities.filter((a) => !isGerencia(a.role));

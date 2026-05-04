@@ -100,7 +100,7 @@ const AuthoritiesSection = () => {
                 )}
               </div>
             );
-          })()}
+          })()
         )}
       </div>
     </section>

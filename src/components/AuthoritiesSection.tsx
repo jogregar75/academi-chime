@@ -51,8 +51,11 @@ const AuthoritiesSection = () => {
             <Loader2 className="w-8 h-8 animate-spin text-accent" />
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {authorities.map((a, i) => (
+          {(() => {
+            const isGerencia = (r: string) => /gerente\s+general/i.test(r);
+            const gerentes = authorities.filter((a) => isGerencia(a.role));
+            const resto = authorities.filter((a) => !isGerencia(a.role));
+            const renderCard = (a: Authority, i: number) => (
               <motion.article
                 key={a.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -82,8 +85,22 @@ const AuthoritiesSection = () => {
                   </p>
                 </div>
               </motion.article>
-            ))}
-          </div>
+            );
+            return (
+              <div className="max-w-6xl mx-auto space-y-6">
+                {gerentes.length > 0 && (
+                  <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    {gerentes.map((a, i) => renderCard(a, i))}
+                  </div>
+                )}
+                {resto.length > 0 && (
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {resto.map((a, i) => renderCard(a, i + gerentes.length))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         )}
       </div>
     </section>

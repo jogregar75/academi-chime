@@ -1,26 +1,32 @@
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
+import enzoPhoto from "@/assets/enzo-guariento.png.asset.json";
+import renatoPhoto from "@/assets/renato-marcuzzi.jpg.asset.json";
+import guerrinoPhoto from "@/assets/guerrino-guariento.jpg.asset.json";
 
 type Founder = {
   name: string;
   role: string;
   bio: string;
+  photo: string;
 };
 
 const founders: Founder[] = [
   {
     name: "Enzo Guariento",
     role: "Fundador",
+    photo: enzoPhoto.url,
     bio: "Enzo Guariento fue uno de los pilares fundamentales en la creación de la U.E. Colegio Los Pirineos Don Bosco. Con una profunda vocación educativa y un compromiso inquebrantable con la formación integral de niños y jóvenes, dedicó su vida a sembrar los valores del Sistema Preventivo de Don Bosco en la comunidad tachirense. Su visión hizo posible que el colegio se convirtiera en un referente de excelencia académica y humana en San Cristóbal.",
   },
   {
     name: "Renato Marcuzzi",
     role: "Fundador",
+    photo: renatoPhoto.url,
     bio: "Renato Marcuzzi acompañó la fundación del colegio con un espíritu emprendedor y un profundo sentido de servicio. Su aporte fue decisivo en la consolidación institucional, aportando trabajo, dedicación y una mirada siempre orientada al bienestar de los estudiantes y sus familias. Su legado perdura en cada generación que se forma bajo el carisma salesiano que él ayudó a establecer.",
   },
   {
     name: "Guerrino Guariento",
     role: "Fundador",
+    photo: guerrinoPhoto.url,
     bio: "Guerrino Guariento fue un visionario que creyó en el poder transformador de la educación. Junto a sus compañeros fundadores, trabajó incansablemente para construir una institución donde la amistad, el estudio y la alegría —lema del colegio— fueran el norte de cada actividad educativa. Su entrega y compromiso siguen siendo inspiración para directivos, docentes y estudiantes.",
   },
 ];
@@ -55,8 +61,13 @@ const FoundersSection = () => (
             transition={{ delay: i * 0.1 }}
             className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden md:flex"
           >
-            <div className="md:w-1/3 bg-muted flex items-center justify-center aspect-square md:aspect-auto">
-              <User className="w-24 h-24 text-muted-foreground/40" />
+            <div className="md:w-1/3 bg-muted aspect-square md:aspect-auto overflow-hidden">
+              <img
+                src={f.photo}
+                alt={`Retrato de ${f.name}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
             <div className="p-8 md:w-2/3 flex flex-col justify-center">
               <p className="text-accent text-xs font-semibold uppercase tracking-wider mb-2">

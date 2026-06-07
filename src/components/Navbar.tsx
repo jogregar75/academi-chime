@@ -11,6 +11,7 @@ const navLinks = [
     submenu: [
       { label: "Institución", href: "/nosotros" },
       { label: "Autoridades", href: "/nosotros/autoridades" },
+      { label: "Fundadores", href: "/nosotros/fundadores" },
     ],
   },
   { label: "Niveles", href: "/niveles" },

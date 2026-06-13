@@ -27,7 +27,10 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, command }) => ({
+  // En build para GitHub Pages usamos la subruta del repo.
+  // En dev / preview de Lovable mantenemos "/" para no romper la vista previa.
+  base: command === "build" ? "/academi-chime/" : "/",
 
   server: {
     host: "::",

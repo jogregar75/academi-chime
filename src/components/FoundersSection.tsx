@@ -83,11 +83,11 @@ const FoundersSection = () => (
             transition={{ delay: i * 0.1 }}
             className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden md:flex md:items-stretch"
           >
-            <div className="md:w-1/3 bg-muted overflow-hidden">
+            <div className="md:w-1/3 bg-muted flex items-center justify-center p-6">
               <img
                 src={f.photo}
                 alt={`Retrato de ${f.name}`}
-                className="w-full h-full object-cover aspect-square md:aspect-auto md:min-h-full"
+                className="w-full max-w-[280px] object-contain rounded-lg shadow-sm"
                 loading="lazy"
               />
             </div>

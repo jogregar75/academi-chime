@@ -12,6 +12,7 @@ const navLinks = [
       { label: "Institución", href: "/nosotros" },
       { label: "Autoridades", href: "/nosotros/autoridades" },
       { label: "Fundadores", href: "/nosotros/fundadores" },
+      { label: "Organigrama", href: "/nosotros/organigrama" },
     ],
   },
   { label: "Niveles", href: "/niveles" },

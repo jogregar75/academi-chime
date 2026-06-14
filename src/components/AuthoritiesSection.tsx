@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Loader2 } from "lucide-react";
+import { User, Loader2, CalendarDays, Briefcase } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 
 type Authority = {
@@ -9,7 +11,24 @@ type Authority = {
   role: string;
   photo_url: string | null;
   display_order: number;
+  joined_date: string | null;
+  positions: string | null;
 };
+
+const formatJoined = (d: string | null) => {
+  if (!d) return null;
+  try {
+    return format(parseISO(d), "d 'de' MMMM 'de' yyyy", { locale: es });
+  } catch {
+    return d;
+  }
+};
+
+const splitPositions = (txt: string | null) =>
+  (txt ?? "")
+    .split(/\r?\n|,/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 const AuthoritiesSection = () => {
   const [authorities, setAuthorities] = useState<Authority[]>([]);
@@ -19,7 +38,7 @@ const AuthoritiesSection = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("authorities")
-        .select("id, name, role, photo_url, display_order")
+        .select("id, name, role, photo_url, display_order, joined_date, positions")
         .order("display_order", { ascending: true });
       setAuthorities((data ?? []) as Authority[]);
       setLoading(false);
@@ -44,6 +63,9 @@ const AuthoritiesSection = () => {
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
             Conoce al equipo directivo y de coordinación que guía la formación de nuestros estudiantes.
           </p>
+          <p className="text-xs text-muted-foreground/70 mt-2 italic">
+            Pasa el cursor sobre cada foto para ver más información
+          </p>
         </motion.div>
 
         {loading ? (
@@ -55,48 +77,90 @@ const AuthoritiesSection = () => {
             const isGerencia = (r: string) => /gerente\s+general/i.test(r);
             const gerentes = authorities.filter((a) => isGerencia(a.role));
             const resto = authorities.filter((a) => !isGerencia(a.role));
-            const renderCard = (a: Authority, i: number, highlight = false) => (
-              <motion.article
-                key={a.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: Math.min(i * 0.05, 0.4) }}
-                className={
-                  highlight
-                    ? "bg-card border-2 border-accent rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow flex flex-col ring-1 ring-accent/30"
-                    : "bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
-                }
-              >
-                <div
+
+            const renderCard = (a: Authority, i: number, highlight = false) => {
+              const joined = formatJoined(a.joined_date);
+              const positions = splitPositions(a.positions);
+              const hasExtra = Boolean(joined || positions.length);
+
+              return (
+                <motion.article
+                  key={a.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: Math.min(i * 0.05, 0.4) }}
                   className={
-                    (highlight
-                      ? "w-32 h-32 md:w-36 md:h-36 "
-                      : "w-24 h-24 md:w-28 md:h-28 ") +
-                    "mt-4 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ring-border"
+                    highlight
+                      ? "group bg-card border-2 border-accent rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow flex flex-col ring-1 ring-accent/30"
+                      : "group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
                   }
                 >
-                  {a.photo_url ? (
-                    <img
-                      src={a.photo_url}
-                      alt={a.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <User className="w-10 h-10 text-muted-foreground/40" />
+                  <div
+                    className={
+                      (highlight
+                        ? "w-32 h-32 md:w-36 md:h-36 "
+                        : "w-24 h-24 md:w-28 md:h-28 ") +
+                      "mt-4 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ring-border relative"
+                    }
+                  >
+                    {a.photo_url ? (
+                      <img
+                        src={a.photo_url}
+                        alt={a.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <User className="w-10 h-10 text-muted-foreground/40" />
+                    )}
+                    {hasExtra && (
+                      <div className="absolute inset-0 rounded-full bg-primary/85 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold">Info</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 text-center flex-1 flex flex-col justify-center">
+                    <p className={highlight ? "font-display font-bold text-foreground leading-tight text-base" : "font-display font-bold text-foreground leading-tight text-sm"}>
+                      {a.name}
+                    </p>
+                    <p className={(highlight ? "text-accent text-xs font-bold" : "text-accent text-[11px] font-semibold") + " uppercase tracking-wider mt-2"}>
+                      {a.role}
+                    </p>
+                  </div>
+
+                  {hasExtra && (
+                    <div className="px-4 pb-4 max-h-0 overflow-hidden opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 ease-out border-t border-border/0 group-hover:border-border/60 group-hover:pt-3 group-hover:mt-1">
+                      {joined && (
+                        <div className="flex items-start gap-2 text-xs text-muted-foreground mb-2">
+                          <CalendarDays className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-semibold text-foreground/80 uppercase tracking-wider text-[10px]">Ingreso</p>
+                            <p>{joined}</p>
+                          </div>
+                        </div>
+                      )}
+                      {positions.length > 0 && (
+                        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                          <Briefcase className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-semibold text-foreground/80 uppercase tracking-wider text-[10px] mb-1">
+                              Cargos desempeñados
+                            </p>
+                            <ul className="space-y-0.5 list-disc list-inside text-left">
+                              {positions.map((p, idx) => (
+                                <li key={idx}>{p}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
-                </div>
-                <div className="p-4 text-center flex-1 flex flex-col justify-center">
-                  <p className={highlight ? "font-display font-bold text-foreground leading-tight text-base" : "font-display font-bold text-foreground leading-tight text-sm"}>
-                    {a.name}
-                  </p>
-                  <p className={(highlight ? "text-accent text-xs font-bold" : "text-accent text-[11px] font-semibold") + " uppercase tracking-wider mt-2"}>
-                    {a.role}
-                  </p>
-                </div>
-              </motion.article>
-            );
+                </motion.article>
+              );
+            };
+
             return (
               <div className="max-w-6xl mx-auto space-y-8">
                 {gerentes.length > 0 && (
@@ -105,7 +169,7 @@ const AuthoritiesSection = () => {
                   </div>
                 )}
                 {resto.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-5xl mx-auto items-start">
                     {resto.map((a, i) => renderCard(a, i + gerentes.length))}
                   </div>
                 )}

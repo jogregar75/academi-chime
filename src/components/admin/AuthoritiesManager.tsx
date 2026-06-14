@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 type Authority = {
@@ -12,6 +13,8 @@ type Authority = {
   role: string;
   photo_url: string | null;
   display_order: number;
+  joined_date: string | null;
+  positions: string | null;
 };
 
 const BUCKET = "authority-photos";
@@ -23,7 +26,13 @@ const AuthoritiesManager = () => {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Authority | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", role: "", display_order: 0 });
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    display_order: 0,
+    joined_date: "",
+    positions: "",
+  });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -47,14 +56,26 @@ const AuthoritiesManager = () => {
 
   const reset = () => {
     setEditing(null);
-    setForm({ name: "", role: "", display_order: (items.at(-1)?.display_order ?? 0) + 10 });
+    setForm({
+      name: "",
+      role: "",
+      display_order: (items.at(-1)?.display_order ?? 0) + 10,
+      joined_date: "",
+      positions: "",
+    });
     setPhotoFile(null);
     setShowForm(false);
   };
 
   const openEdit = (a: Authority) => {
     setEditing(a);
-    setForm({ name: a.name, role: a.role, display_order: a.display_order });
+    setForm({
+      name: a.name,
+      role: a.role,
+      display_order: a.display_order,
+      joined_date: a.joined_date ?? "",
+      positions: a.positions ?? "",
+    });
     setPhotoFile(null);
     setShowForm(true);
   };
@@ -80,13 +101,20 @@ const AuthoritiesManager = () => {
     }
     setSaving(true);
 
+    const payload = {
+      name: form.name.trim(),
+      role: form.role.trim(),
+      display_order: form.display_order,
+      joined_date: form.joined_date || null,
+      positions: form.positions.trim() || null,
+    };
+
     let id = editing?.id;
-    let photo_url = editing?.photo_url ?? null;
 
     if (editing) {
       const { error } = await (supabase as any)
         .from("authorities")
-        .update({ name: form.name.trim(), role: form.role.trim(), display_order: form.display_order })
+        .update(payload)
         .eq("id", editing.id);
       if (error) {
         toast({ title: "Error", description: "No se pudo guardar.", variant: "destructive" });
@@ -96,7 +124,7 @@ const AuthoritiesManager = () => {
     } else {
       const { data, error } = await (supabase as any)
         .from("authorities")
-        .insert({ name: form.name.trim(), role: form.role.trim(), display_order: form.display_order })
+        .insert(payload)
         .select("id")
         .single();
       if (error || !data) {
@@ -110,7 +138,6 @@ const AuthoritiesManager = () => {
     if (photoFile && id) {
       const url = await uploadPhoto(id);
       if (url) {
-        photo_url = url;
         await (supabase as any).from("authorities").update({ photo_url: url }).eq("id", id);
       }
     }
@@ -124,7 +151,6 @@ const AuthoritiesManager = () => {
   const handleDelete = async (a: Authority) => {
     if (!window.confirm(`¿Eliminar a "${a.role}"?`)) return;
     if (a.photo_url) {
-      // path is after bucket name in URL
       const marker = `/${BUCKET}/`;
       const idx = a.photo_url.indexOf(marker);
       if (idx >= 0) {
@@ -147,7 +173,7 @@ const AuthoritiesManager = () => {
         <div>
           <p className="text-sm text-accent font-semibold uppercase tracking-wider">Autoridades</p>
           <h2 className="font-display text-2xl font-bold text-foreground mt-1">Equipo directivo</h2>
-          <p className="text-muted-foreground text-sm mt-1">Administre nombre, cargo y foto de cada autoridad.</p>
+          <p className="text-muted-foreground text-sm mt-1">Administre nombre, cargo, foto, fecha de ingreso y cargos desempeñados.</p>
         </div>
         <Button
           onClick={() => {
@@ -173,8 +199,16 @@ const AuthoritiesManager = () => {
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={120} />
           </div>
           <div className="space-y-2">
-            <Label>Cargo</Label>
+            <Label>Cargo actual</Label>
             <Input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required maxLength={150} />
+          </div>
+          <div className="space-y-2">
+            <Label>Fecha de ingreso</Label>
+            <Input
+              type="date"
+              value={form.joined_date}
+              onChange={(e) => setForm({ ...form, joined_date: e.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <Label>Orden</Label>
@@ -184,7 +218,18 @@ const AuthoritiesManager = () => {
               onChange={(e) => setForm({ ...form, display_order: Number(e.target.value) })}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Cargos desempeñados</Label>
+            <Textarea
+              placeholder="Ej: Docente de I y II Etapa, Coordinadora de Cultura, Subdirectora de Educación Primaria"
+              value={form.positions}
+              onChange={(e) => setForm({ ...form, positions: e.target.value })}
+              rows={3}
+              maxLength={1000}
+            />
+            <p className="text-xs text-muted-foreground">Separe cada cargo con coma o salto de línea. Se mostrará al pasar el mouse sobre la foto.</p>
+          </div>
+          <div className="space-y-2 sm:col-span-2">
             <Label>Foto</Label>
             <div
               className="flex items-center gap-3 rounded-md border-2 border-dashed border-input bg-background p-3 cursor-pointer hover:border-accent transition-colors"

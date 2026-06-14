@@ -57,8 +57,10 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
+          joined_date: string | null
           name: string
           photo_url: string | null
+          positions: string | null
           role: string
           updated_at: string
         }
@@ -66,8 +68,10 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          joined_date?: string | null
           name: string
           photo_url?: string | null
+          positions?: string | null
           role: string
           updated_at?: string
         }
@@ -75,9 +79,32 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          joined_date?: string | null
           name?: string
           photo_url?: string | null
+          positions?: string | null
           role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_chart_settings: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
           updated_at?: string
         }
         Relationships: []

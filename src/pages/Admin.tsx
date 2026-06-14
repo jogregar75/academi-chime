@@ -16,6 +16,7 @@ import { isAdminUser } from "@/lib/admin-auth";
 import { formatFileSize } from "@/lib/activity-files";
 import SchoolActivitiesManager from "@/components/admin/SchoolActivitiesManager";
 import AuthoritiesManager from "@/components/admin/AuthoritiesManager";
+import OrgChartManager from "@/components/admin/OrgChartManager";
 
 type WeeklyTask = Tables<"weekly_tasks">;
 
@@ -395,6 +396,7 @@ const Admin = () => {
 
         <SchoolActivitiesManager />
         <AuthoritiesManager />
+        <OrgChartManager />
       </main>
     </div>
   );

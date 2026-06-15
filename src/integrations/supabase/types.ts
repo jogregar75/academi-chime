@@ -88,6 +88,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coordinators: {
+        Row: {
+          created_at: string
+          id: string
+          level: Database["public"]["Enums"]["education_level"]
+          name: string
+          photo_url: string | null
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level: Database["public"]["Enums"]["education_level"]
+          name: string
+          photo_url?: string | null
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: Database["public"]["Enums"]["education_level"]
+          name?: string
+          photo_url?: string | null
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       org_chart_settings: {
         Row: {
           created_at: string
@@ -105,6 +135,33 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_logos: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          promo_year: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          promo_year: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          promo_year?: number
           updated_at?: string
         }
         Relationships: []
@@ -176,6 +233,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      teachers: {
+        Row: {
+          created_at: string
+          first_name: string
+          grades: string[]
+          id: string
+          last_name: string
+          level: Database["public"]["Enums"]["education_level"]
+          photo_url: string | null
+          subjects: string[]
+          updated_at: string
+          years: string[]
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          grades?: string[]
+          id?: string
+          last_name: string
+          level: Database["public"]["Enums"]["education_level"]
+          photo_url?: string | null
+          subjects?: string[]
+          updated_at?: string
+          years?: string[]
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          grades?: string[]
+          id?: string
+          last_name?: string
+          level?: Database["public"]["Enums"]["education_level"]
+          photo_url?: string | null
+          subjects?: string[]
+          updated_at?: string
+          years?: string[]
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -249,6 +345,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      education_level: "inicial" | "primaria_1" | "primaria_2" | "bachillerato"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -377,6 +474,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      education_level: ["inicial", "primaria_1", "primaria_2", "bachillerato"],
     },
   },
 } as const

@@ -17,6 +17,9 @@ import { formatFileSize } from "@/lib/activity-files";
 import SchoolActivitiesManager from "@/components/admin/SchoolActivitiesManager";
 import AuthoritiesManager from "@/components/admin/AuthoritiesManager";
 import OrgChartManager from "@/components/admin/OrgChartManager";
+import CoordinatorsManager from "@/components/admin/CoordinatorsManager";
+import TeachersManager from "@/components/admin/TeachersManager";
+import PromosManager from "@/components/admin/PromosManager";
 
 type WeeklyTask = Tables<"weekly_tasks">;
 
@@ -396,7 +399,10 @@ const Admin = () => {
 
         <SchoolActivitiesManager />
         <AuthoritiesManager />
+        <CoordinatorsManager />
+        <TeachersManager />
         <OrgChartManager />
+        <PromosManager />
       </main>
     </div>
   );

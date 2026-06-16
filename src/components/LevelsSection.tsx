@@ -1,29 +1,56 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import inicialImg from "@/assets/level-inicial.jpg";
 import primariaImg from "@/assets/level-primaria.jpg";
 import secundariaImg from "@/assets/level-secundaria.jpg";
 
-const levels = [
+type LevelLink = { label: string; to: string };
+
+const levels: {
+  title: string;
+  age: string;
+  img: string;
+  description: string;
+  features: string[];
+  links: LevelLink[];
+}[] = [
   {
     title: "Educación Inicial",
     age: "3 a 5 años",
     img: inicialImg,
-    description: "Estimulación temprana, juego dirigido y desarrollo de habilidades sociales en un ambiente cálido y seguro. Nuestros pequeños aprenden a explorar el mundo con curiosidad y creatividad.",
+    description:
+      "Estimulación temprana, juego dirigido y desarrollo de habilidades sociales en un ambiente cálido y seguro. Nuestros pequeños aprenden a explorar el mundo con curiosidad y creatividad.",
     features: ["Psicomotricidad", "Arte y música", "Inglés básico", "Desarrollo socioemocional"],
+    links: [{ label: "Ver Inicial", to: "/niveles/inicial" }],
   },
   {
     title: "Educación Primaria",
     age: "6 a 11 años",
     img: primariaImg,
-    description: "Consolidación de competencias académicas fundamentales con metodologías activas e innovadoras. Fomentamos el pensamiento crítico y el amor por el aprendizaje.",
+    description:
+      "Consolidación de competencias académicas fundamentales con metodologías activas e innovadoras. Fomentamos el pensamiento crítico y el amor por el aprendizaje.",
     features: ["Matemáticas aplicadas", "Comprensión lectora", "Ciencias y tecnología", "Formación en valores"],
+    links: [
+      { label: "Primera Etapa", to: "/niveles/primaria/primera-etapa" },
+      { label: "Segunda Etapa", to: "/niveles/primaria/segunda-etapa" },
+    ],
   },
   {
     title: "Educación Secundaria",
     age: "12 a 16 años",
     img: secundariaImg,
-    description: "Preparación integral para la educación superior con énfasis en ciencias y orientación vocacional. Formamos líderes del mañana.",
+    description:
+      "Preparación integral para la educación superior con énfasis en ciencias y orientación vocacional. Formamos líderes del mañana.",
     features: ["Laboratorios equipados", "Orientación vocacional", "Proyectos de investigación", "Preparación preuniversitaria"],
+    links: [
+      { label: "1er Año", to: "/niveles/secundaria/1" },
+      { label: "2do Año", to: "/niveles/secundaria/2" },
+      { label: "3er Año", to: "/niveles/secundaria/3" },
+      { label: "4to Año", to: "/niveles/secundaria/4" },
+      { label: "5to Año", to: "/niveles/secundaria/5" },
+    ],
   },
 ];
 
@@ -63,7 +90,7 @@ const LevelsSection = () => (
             <div className="lg:w-1/2">
               <h3 className="font-display text-3xl font-bold text-foreground mb-4">{level.title}</h3>
               <p className="text-muted-foreground leading-relaxed mb-6">{level.description}</p>
-              <ul className="grid grid-cols-2 gap-3">
+              <ul className="grid grid-cols-2 gap-3 mb-6">
                 {level.features.map((f) => (
                   <li key={f} className="flex items-center gap-2 text-foreground">
                     <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
@@ -71,6 +98,15 @@ const LevelsSection = () => (
                   </li>
                 ))}
               </ul>
+              <div className="flex flex-wrap gap-2">
+                {level.links.map((l) => (
+                  <Button key={l.to} asChild variant="default" size="sm" className="gap-2">
+                    <Link to={l.to}>
+                      {l.label} <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                ))}
+              </div>
             </div>
           </motion.div>
         ))}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,13 +15,15 @@ type Coordinator = {
 
 type Teacher = {
   id: string;
-  first_name: string;
-  last_name: string;
+  name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   photo_url: string | null;
   level: Level;
-  grades: string[];
-  subjects: string[];
-  years: string[];
+  grades: string[] | null;
+  subjects: string[] | null;
+  years: string[] | null;
+  section: string | null;
 };
 
 interface Props {
@@ -31,6 +33,9 @@ interface Props {
   /** For coordinator: section identifier. For bachillerato also used to filter teachers by year. */
   section: string;
 }
+
+const fullName = (t: Teacher) =>
+  (t.name && t.name.trim()) || `${t.first_name ?? ""} ${t.last_name ?? ""}`.trim();
 
 const PersonCard = ({
   photo,
@@ -89,8 +94,7 @@ const StaffSection = ({ title, subtitle, level, section }: Props) => {
         .maybeSingle();
       setCoord((c as Coordinator) ?? null);
 
-      let q = (supabase as any).from("teachers").select("*").eq("level", level).order("last_name");
-      const { data: t } = await q;
+      const { data: t } = await (supabase as any).from("teachers").select("*").eq("level", level);
       let list = (t as Teacher[]) ?? [];
       if (level === "bachillerato") {
         list = list.filter((x) => (x.years ?? []).includes(section));
@@ -101,13 +105,33 @@ const StaffSection = ({ title, subtitle, level, section }: Props) => {
     void load();
   }, [level, section]);
 
-  const renderTeacherSubtitle = (t: Teacher) => {
-    if (level === "bachillerato") {
-      const subjects = (t.subjects ?? []).join(", ");
-      const years = (t.years ?? []).map((y) => `${y}° año`).join(", ");
-      return [subjects, years].filter(Boolean).join("\n");
+  // Group teachers by "Grado / Año - Sección"; sort alphabetically by name.
+  const groups = useMemo(() => {
+    const map = new Map<string, Teacher[]>();
+    const labelFor = (t: Teacher) => {
+      if (level === "bachillerato") {
+        return t.section ? `Sección ${t.section}` : "Sin sección";
+      }
+      const grade = (t.grades ?? []).join(", ") || "Sin grado";
+      return t.section ? `${grade} — Sección ${t.section}` : grade;
+    };
+    for (const t of teachers) {
+      const key = labelFor(t);
+      const arr = map.get(key) ?? [];
+      arr.push(t);
+      map.set(key, arr);
     }
-    return (t.grades ?? []).join(", ");
+    // sort each group's teachers alphabetically
+    for (const arr of map.values()) {
+      arr.sort((a, b) => fullName(a).localeCompare(fullName(b), "es"));
+    }
+    // sort groups by key
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, "es"));
+  }, [teachers, level]);
+
+  const renderTeacherSubtitle = (t: Teacher) => {
+    if (level === "bachillerato") return (t.subjects ?? []).join(", ");
+    return ""; // grade already shown in group heading
   };
 
   return (
@@ -138,14 +162,23 @@ const StaffSection = ({ title, subtitle, level, section }: Props) => {
             {teachers.length === 0 ? (
               <p className="text-center text-muted-foreground">Próximamente</p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 max-w-6xl mx-auto">
-                {teachers.map((t) => (
-                  <PersonCard
-                    key={t.id}
-                    photo={t.photo_url}
-                    title={`${t.first_name} ${t.last_name}`}
-                    subtitle={renderTeacherSubtitle(t)}
-                  />
+              <div className="space-y-10 max-w-6xl mx-auto">
+                {groups.map(([groupLabel, list]) => (
+                  <div key={groupLabel}>
+                    <h3 className="font-display text-lg font-bold text-accent mb-4 border-b border-border pb-2">
+                      {groupLabel}
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                      {list.map((t) => (
+                        <PersonCard
+                          key={t.id}
+                          photo={t.photo_url}
+                          title={fullName(t)}
+                          subtitle={renderTeacherSubtitle(t)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

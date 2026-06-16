@@ -242,7 +242,9 @@ export type Database = {
           id: string
           last_name: string
           level: Database["public"]["Enums"]["education_level"]
+          name: string | null
           photo_url: string | null
+          section: string | null
           subjects: string[]
           updated_at: string
           years: string[]
@@ -254,7 +256,9 @@ export type Database = {
           id?: string
           last_name: string
           level: Database["public"]["Enums"]["education_level"]
+          name?: string | null
           photo_url?: string | null
+          section?: string | null
           subjects?: string[]
           updated_at?: string
           years?: string[]
@@ -266,7 +270,9 @@ export type Database = {
           id?: string
           last_name?: string
           level?: Database["public"]["Enums"]["education_level"]
+          name?: string | null
           photo_url?: string | null
+          section?: string | null
           subjects?: string[]
           updated_at?: string
           years?: string[]

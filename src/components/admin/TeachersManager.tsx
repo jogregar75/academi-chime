@@ -12,13 +12,15 @@ const FOLDER = "teachers";
 type Level = "inicial" | "primaria_1" | "primaria_2" | "bachillerato";
 type Row = {
   id: string;
-  first_name: string;
-  last_name: string;
+  name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   photo_url: string | null;
   level: Level;
-  grades: string[];
-  subjects: string[];
-  years: string[];
+  grades: string[] | null;
+  subjects: string[] | null;
+  years: string[] | null;
+  section: string | null;
 };
 
 const LEVELS: { value: Level; label: string }[] = [
@@ -30,6 +32,9 @@ const LEVELS: { value: Level; label: string }[] = [
 
 const YEAR_OPTIONS = ["1", "2", "3", "4", "5"];
 
+const displayName = (r: Row) =>
+  (r.name && r.name.trim()) || `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim();
+
 const TeachersManager = () => {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
@@ -37,9 +42,9 @@ const TeachersManager = () => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
   const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     level: "inicial" as Level,
+    section: "",
     grades: "",
     subjects: "",
     years: [] as string[],
@@ -51,7 +56,7 @@ const TeachersManager = () => {
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
-    let q = (supabase as any).from("teachers").select("*").order("last_name");
+    let q = (supabase as any).from("teachers").select("*").order("name");
     if (filter !== "all") q = q.eq("level", filter);
     const { data } = await q;
     setRows((data as Row[]) ?? []);
@@ -62,7 +67,7 @@ const TeachersManager = () => {
 
   const reset = () => {
     setEditing(null);
-    setForm({ first_name: "", last_name: "", level: "inicial", grades: "", subjects: "", years: [] });
+    setForm({ name: "", level: "inicial", section: "", grades: "", subjects: "", years: [] });
     setFile(null);
     setShowForm(false);
   };
@@ -70,9 +75,9 @@ const TeachersManager = () => {
   const openEdit = (r: Row) => {
     setEditing(r);
     setForm({
-      first_name: r.first_name,
-      last_name: r.last_name,
+      name: displayName(r),
       level: r.level,
+      section: r.section ?? "",
       grades: (r.grades ?? []).join(", "),
       subjects: (r.subjects ?? []).join(", "),
       years: r.years ?? [],
@@ -89,7 +94,7 @@ const TeachersManager = () => {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.first_name.trim() || !form.last_name.trim()) return;
+    if (!form.name.trim()) return;
     setSaving(true);
     let photo_url: string | null = editing?.photo_url ?? null;
     if (file) {
@@ -101,10 +106,18 @@ const TeachersManager = () => {
       photo_url = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }
     const isBach = form.level === "bachillerato";
+    // Keep legacy first_name/last_name for compatibility (split on first space).
+    const trimmed = form.name.trim();
+    const firstSpace = trimmed.indexOf(" ");
+    const legacyFirst = firstSpace >= 0 ? trimmed.slice(0, firstSpace) : trimmed;
+    const legacyLast = firstSpace >= 0 ? trimmed.slice(firstSpace + 1) : "";
+
     const payload = {
-      first_name: form.first_name.trim(),
-      last_name: form.last_name.trim(),
+      name: trimmed,
+      first_name: legacyFirst,
+      last_name: legacyLast,
       level: form.level,
+      section: form.section.trim() || null,
       photo_url,
       grades: isBach ? [] : form.grades.split(",").map((s) => s.trim()).filter(Boolean),
       subjects: isBach ? form.subjects.split(",").map((s) => s.trim()).filter(Boolean) : [],
@@ -152,13 +165,19 @@ const TeachersManager = () => {
             <h3 className="font-bold">{editing ? "Editar" : "Nuevo"} docente</h3>
             <Button type="button" variant="ghost" size="icon" onClick={reset}><X className="w-4 h-4" /></Button>
           </div>
-          <div className="space-y-2"><Label>Nombre(s)</Label><Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required /></div>
-          <div className="space-y-2"><Label>Apellido(s)</Label><Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required /></div>
           <div className="space-y-2 sm:col-span-2">
+            <Label>Nombre completo</Label>
+            <Input placeholder="Ej: María Pérez González" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </div>
+          <div className="space-y-2">
             <Label>Nivel</Label>
             <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value as Level })}>
               {LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Sección</Label>
+            <Input placeholder="Ej: A, B, C..." value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} />
           </div>
 
           {!isBach ? (
@@ -210,11 +229,11 @@ const TeachersManager = () => {
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
           {rows.map((r) => (
             <div key={r.id} className="flex items-center gap-3 p-3 border border-border rounded-lg">
-              {r.photo_url ? <img src={r.photo_url} alt={`${r.first_name} ${r.last_name}`} className="w-12 h-12 rounded-full object-cover" /> : <div className="w-12 h-12 rounded-full bg-muted" />}
+              {r.photo_url ? <img src={r.photo_url} alt={displayName(r)} className="w-12 h-12 rounded-full object-cover" /> : <div className="w-12 h-12 rounded-full bg-muted" />}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{r.first_name} {r.last_name}</p>
+                <p className="text-sm font-semibold truncate">{displayName(r)}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {labelFor(r.level)}
+                  {labelFor(r.level)}{r.section ? ` — Secc. ${r.section}` : ""}
                   {r.level === "bachillerato"
                     ? ` — ${(r.subjects ?? []).join(", ")} (${(r.years ?? []).map((y) => `${y}°`).join(", ")})`
                     : ` — ${(r.grades ?? []).join(", ")}`}

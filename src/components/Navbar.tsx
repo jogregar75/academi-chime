@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Instagram, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoCDB from "@/assets/LogoCDB.png";
+
+// URLs genéricas — reemplazar con las URLs reales
+const INSTAGRAM_URL = "https://instagram.com/tu_usuario";
+const ARCADAT_URL = "https://arcadat.com";
 
 const navLinks = [
   { label: "Inicio", href: "/" },
@@ -72,6 +76,31 @@ const Navbar = () => {
             </span>
           </span>
         </Link>
+
+        {/* SOCIAL ICONS EN EL MEMBRETE */}
+        <div className="hidden md:flex items-center gap-4 ml-auto mr-6">
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            title="Instagram"
+            className="text-white/80 hover:text-accent transition-colors"
+          >
+            <Instagram className="w-5 h-5" />
+          </a>
+          <a
+            href={ARCADAT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Arcadat"
+            title="Arcadat"
+            className="flex items-center gap-1 text-white/80 hover:text-accent transition-colors text-xs font-semibold uppercase tracking-wide"
+          >
+            <GraduationCap className="w-5 h-5" />
+            <span>Arcadat</span>
+          </a>
+        </div>
 
         {/* DESKTOP MENU */}
         {/* <ul className="hidden md:flex items-center gap-8">

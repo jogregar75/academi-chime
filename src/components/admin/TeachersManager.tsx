@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image-compress";
 
 const BUCKET = "authority-photos";
 const FOLDER = "teachers";
@@ -98,12 +99,25 @@ const TeachersManager = () => {
     setSaving(true);
     let photo_url: string | null = editing?.photo_url ?? null;
     if (file) {
-      const ext = file.name.split(".").pop();
-      const path = `${FOLDER}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-      if (error) { toast({ title: "Error subiendo imagen", variant: "destructive" }); setSaving(false); return; }
-      if (editing?.photo_url) await removeFile(editing.photo_url);
-      photo_url = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      try {
+        const compressed = await compressImage(file, { maxSize: 800, quality: 0.82 });
+        const ext = (compressed.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const path = `${FOLDER}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, compressed, { upsert: true, contentType: compressed.type });
+        if (error) {
+          toast({ title: "Error subiendo imagen", description: error.message, variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        if (editing?.photo_url) await removeFile(editing.photo_url);
+        photo_url = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      } catch (err: any) {
+        toast({ title: "Error procesando la imagen", description: err?.message ?? "", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
     }
     const isBach = form.level === "bachillerato";
     // Keep legacy first_name/last_name for compatibility (split on first space).

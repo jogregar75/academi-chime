@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image-compress";
 
 const BUCKET = "authority-photos";
 const FOLDER = "teachers";

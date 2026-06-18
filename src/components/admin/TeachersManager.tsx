@@ -134,7 +134,7 @@ const TeachersManager = () => {
       section: form.section.trim() || null,
       photo_url,
       grades: isBach ? [] : form.grades.split(",").map((s) => s.trim()).filter(Boolean),
-      subjects: isBach ? form.subjects.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      subjects: form.subjects.split(",").map((s) => s.trim()).filter(Boolean),
       years: isBach ? form.years : [],
     };
     const { error } = editing
@@ -199,28 +199,29 @@ const TeachersManager = () => {
               <Label>Grado(s) (separados por coma)</Label>
               <Input placeholder="Ej: 1er grado, 2do grado" value={form.grades} onChange={(e) => setForm({ ...form, grades: e.target.value })} />
             </div>
-          ) : (
-            <>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Materia(s) (separadas por coma)</Label>
-                <Input placeholder="Ej: Matemática, Física" value={form.subjects} onChange={(e) => setForm({ ...form, subjects: e.target.value })} />
+          ) : null}
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Espacio(s) curricular(es) (separados por coma)</Label>
+            <Input placeholder="Ej: Informática, Matemática, Inglés" value={form.subjects} onChange={(e) => setForm({ ...form, subjects: e.target.value })} />
+          </div>
+
+          {isBach && (
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Año(s)</Label>
+              <div className="flex flex-wrap gap-2">
+                {YEAR_OPTIONS.map((y) => {
+                  const active = form.years.includes(y);
+                  return (
+                    <button type="button" key={y} onClick={() =>
+                      setForm({ ...form, years: active ? form.years.filter((x) => x !== y) : [...form.years, y] })}
+                      className={`px-3 py-1.5 rounded-full text-sm border ${active ? "bg-accent text-accent-foreground border-accent" : "bg-background border-input"}`}>
+                      {y}° año
+                    </button>
+                  );
+                })}
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Año(s)</Label>
-                <div className="flex flex-wrap gap-2">
-                  {YEAR_OPTIONS.map((y) => {
-                    const active = form.years.includes(y);
-                    return (
-                      <button type="button" key={y} onClick={() =>
-                        setForm({ ...form, years: active ? form.years.filter((x) => x !== y) : [...form.years, y] })}
-                        className={`px-3 py-1.5 rounded-full text-sm border ${active ? "bg-accent text-accent-foreground border-accent" : "bg-background border-input"}`}>
-                        {y}° año
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           <div className="space-y-2 sm:col-span-2">
@@ -250,7 +251,7 @@ const TeachersManager = () => {
                   {labelFor(r.level)}{r.section ? ` — Secc. ${r.section}` : ""}
                   {r.level === "bachillerato"
                     ? ` — ${(r.subjects ?? []).join(", ")} (${(r.years ?? []).map((y) => `${y}°`).join(", ")})`
-                    : ` — ${(r.grades ?? []).join(", ")}`}
+                    : ` — ${(r.grades ?? []).join(", ")}${(r.subjects ?? []).length ? ` / ${(r.subjects ?? []).join(", ")}` : ""}`}
                 </p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="w-4 h-4" /></Button>

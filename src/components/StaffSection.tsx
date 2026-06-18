@@ -130,8 +130,8 @@ const StaffSection = ({ title, subtitle, level, section }: Props) => {
   }, [teachers, level]);
 
   const renderTeacherSubtitle = (t: Teacher) => {
-    if (level === "bachillerato") return (t.subjects ?? []).join(", ");
-    return ""; // grade already shown in group heading
+    const subs = (t.subjects ?? []).join(", ");
+    return subs || "";
   };
 
   return (

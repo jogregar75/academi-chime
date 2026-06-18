@@ -251,7 +251,7 @@ const TeachersManager = () => {
                   {labelFor(r.level)}{r.section ? ` — Secc. ${r.section}` : ""}
                   {r.level === "bachillerato"
                     ? ` — ${(r.subjects ?? []).join(", ")} (${(r.years ?? []).map((y) => `${y}°`).join(", ")})`
-                    : ` — ${(r.grades ?? []).join(", ")}`}
+                    : ` — ${(r.grades ?? []).join(", ")}${(r.subjects ?? []).length ? ` / ${(r.subjects ?? []).join(", ")}` : ""}`}
                 </p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="w-4 h-4" /></Button>

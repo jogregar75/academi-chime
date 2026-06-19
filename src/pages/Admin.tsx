@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
   GraduationCap, LogOut, Loader2, ArrowLeft,
-  ClipboardList, CalendarDays, Users, UserCog, Network, Award,
+  ClipboardList, CalendarDays, Users, UserCog, Network, Award, Newspaper,
 } from "lucide-react";
 import { isAdminUser } from "@/lib/admin-auth";
 import WeeklyTasksManager from "@/components/admin/WeeklyTasksManager";
@@ -15,12 +15,14 @@ import OrgChartManager from "@/components/admin/OrgChartManager";
 import CoordinatorsManager from "@/components/admin/CoordinatorsManager";
 import TeachersManager from "@/components/admin/TeachersManager";
 import PromosManager from "@/components/admin/PromosManager";
+import NewsManager from "@/components/admin/NewsManager";
 
 type SectionKey =
   | "tareas" | "actividades" | "autoridades" | "coordinadores"
-  | "docentes" | "organigrama" | "promos";
+  | "docentes" | "organigrama" | "promos" | "noticias";
 
 const SECTIONS: { key: SectionKey; title: string; description: string; icon: React.ElementType; color: string }[] = [
+  { key: "noticias", title: "Noticias", description: "Noticias, actos y actividades con fotos/videos", icon: Newspaper, color: "bg-indigo-500" },
   { key: "tareas", title: "Tareas Semanales", description: "Asignaciones por semana y nivel", icon: ClipboardList, color: "bg-blue-500" },
   { key: "actividades", title: "Actividades del Colegio", description: "Eventos y actividades escolares", icon: CalendarDays, color: "bg-emerald-500" },
   { key: "autoridades", title: "Autoridades", description: "Directivos y personal jerárquico", icon: Users, color: "bg-amber-500" },
@@ -32,6 +34,7 @@ const SECTIONS: { key: SectionKey; title: string; description: string; icon: Rea
 
 const renderSection = (key: SectionKey) => {
   switch (key) {
+    case "noticias": return <NewsManager />;
     case "tareas": return <WeeklyTasksManager />;
     case "actividades": return <SchoolActivitiesManager />;
     case "autoridades": return <AuthoritiesManager />;

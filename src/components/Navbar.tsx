@@ -44,6 +44,7 @@ const navLinks = [
       { label: "Promos", href: "/actividades/promos" },
     ],
   },
+  { label: "Noticias", href: "/noticias" },
   { label: "Comunicados", href: "/comunicados" },
   { label: "Contacto", href: "/contacto", disabled: true },
 ];

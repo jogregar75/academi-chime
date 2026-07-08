@@ -28,6 +28,7 @@ import Actividadesprimaria from "./pages/ActividadesPrimaria";
 import Promos from "./pages/Promos";
 import Comunicados from "./pages/Comunicados";
 import Noticias from "./pages/Noticias";
+import NoticiaDetalle from "./pages/NoticiaDetalle";
 import Contacto from "./pages/Contacto";
 import Navbar from "./components/Navbar";
 

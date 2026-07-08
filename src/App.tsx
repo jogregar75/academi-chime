@@ -28,6 +28,7 @@ import Actividadesprimaria from "./pages/ActividadesPrimaria";
 import Promos from "./pages/Promos";
 import Comunicados from "./pages/Comunicados";
 import Noticias from "./pages/Noticias";
+import NoticiaDetalle from "./pages/NoticiaDetalle";
 import Contacto from "./pages/Contacto";
 import Navbar from "./components/Navbar";
 
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/comunicados" element={<Comunicados />} />
               <Route path="/noticias" element={<Noticias />} />
+              <Route path="/noticias/:id" element={<NoticiaDetalle />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />

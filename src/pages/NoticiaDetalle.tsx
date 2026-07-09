@@ -93,7 +93,12 @@ const NoticiaDetalle = () => {
           {cover && (
             <div className="w-full bg-black">
               {cover.media_type === "image" ? (
-                <img src={cover.url} alt={item.title} className="w-full max-h-[520px] object-cover" />
+                <img
+                  src={cover.url}
+                  alt={item.title}
+                  className="w-full max-h-[520px] object-cover cursor-pointer"
+                  onClick={() => setLightbox(cover.url ?? null)}
+                />
               ) : (
                 <video src={cover.url} controls className="w-full max-h-[520px] object-contain bg-black" />
               )}

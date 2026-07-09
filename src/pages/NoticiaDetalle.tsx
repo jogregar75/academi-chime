@@ -125,19 +125,43 @@ const NoticiaDetalle = () => {
             {rest.length > 0 && (
               <div className="mt-10 pt-8 border-t border-border">
                 <h2 className="font-display text-xl font-bold text-foreground mb-4">Galería</h2>
-                <div className={`grid gap-3 ${rest.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {rest.map((m) =>
                     m.media_type === "image" ? (
-                      <img key={m.id} src={m.url} alt={item.title}
-                        className="w-full rounded-lg object-cover max-h-[420px]" />
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setLightbox(m.url ?? null)}
+                        className="relative w-full aspect-[4/3] rounded-lg overflow-hidden group focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <img
+                          src={m.url}
+                          alt={`${item.title} - imagen`}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </button>
                     ) : (
-                      <video key={m.id} src={m.url} controls
-                        className="w-full rounded-lg object-cover max-h-[420px] bg-black" />
+                      <div key={m.id} className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
+                        <video src={m.url} controls className="w-full h-full object-cover bg-black" />
+                      </div>
                     )
                   )}
                 </div>
               </div>
             )}
+
+            <Dialog open={!!lightbox} onOpenChange={(open) => !open && setLightbox(null)}>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent shadow-none overflow-hidden">
+                <DialogTitle className="sr-only">Imagen ampliada</DialogTitle>
+                {lightbox && (
+                  <img
+                    src={lightbox}
+                    alt="Imagen ampliada"
+                    className="w-full h-full max-h-[90vh] object-contain rounded-lg"
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </motion.article>
       </div>

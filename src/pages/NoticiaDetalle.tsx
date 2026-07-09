@@ -7,7 +7,6 @@ import { es } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const BUCKET = "news-media";
 

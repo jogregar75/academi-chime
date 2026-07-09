@@ -54,6 +54,16 @@ const Admin = () => {
   const activeSection = SECTIONS.find((s) => s.key === active);
 
   useEffect(() => {
+    // IMPORTANT: never `await` Supabase calls inside onAuthStateChange —
+    // it deadlocks the SDK and causes subsequent inserts/updates to hang
+    // until the page is refreshed. Subscribe first (sync-only handler),
+    // then do the async access check separately.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) {
+        navigate("/admin/login");
+      }
+    });
+
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/admin/login"); return; }
@@ -66,11 +76,7 @@ const Admin = () => {
       setCheckingAccess(false);
     };
     void check();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      if (!session) { navigate("/admin/login"); return; }
-      const ok = await isAdminUser(session.user.id);
-      if (!ok) { await supabase.auth.signOut(); navigate("/admin/login"); }
-    });
+
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 

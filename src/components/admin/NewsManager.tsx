@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
+import UploadProgressModal, { type UploadProgress } from "./UploadProgressModal";
 
 const BUCKET = "news-media";
 
@@ -33,14 +34,32 @@ type NewsItem = {
 const sanitize = (name: string) =>
   name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
 
-const uploadFiles = async (newsId: string, files: File[], startPosition: number) => {
+type ProgressUpdater = (p: Partial<UploadProgress>) => void;
+
+const uploadFiles = async (
+  newsId: string,
+  files: File[],
+  startPosition: number,
+  onProgress?: ProgressUpdater,
+) => {
   const uploadedPaths: string[] = [];
   const rows: Array<{ news_id: string; storage_path: string; media_type: string; position: number }> = [];
   let idx = startPosition;
-  for (const raw of files) {
+  const total = files.length;
+
+  for (let i = 0; i < files.length; i++) {
+    const raw = files[i];
     const isImage = raw.type.startsWith("image/");
     const isVideo = raw.type.startsWith("video/");
     if (!isImage && !isVideo) continue;
+
+    onProgress?.({
+      stage: "uploading",
+      currentFile: raw.name,
+      currentIndex: i + 1,
+      totalFiles: total,
+      percent: total > 0 ? Math.round((i / total) * 100) : 0,
+    });
 
     const toUpload = isImage
       ? await compressImage(raw, { maxSize: 1600, quality: 0.85 }).catch(() => raw)
@@ -59,9 +78,19 @@ const uploadFiles = async (newsId: string, files: File[], startPosition: number)
       media_type: isImage ? "image" : "video",
       position: idx++,
     });
+
+    onProgress?.({
+      stage: "uploading",
+      currentFile: raw.name,
+      currentIndex: i + 1,
+      totalFiles: total,
+      percent: total > 0 ? Math.round(((i + 1) / total) * 100) : 100,
+    });
   }
   return { uploadedPaths, rows };
 };
+
+const initialProgress: UploadProgress = { stage: "creating", percent: 0 };
 
 const NewsManager = () => {
   const { toast } = useToast();
@@ -85,6 +114,13 @@ const NewsManager = () => {
   const [editFileKey, setEditFileKey] = useState(0);
   const [editMedia, setEditMedia] = useState<NewsMedia[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // Progress modal
+  const [progress, setProgress] = useState<UploadProgress>(initialProgress);
+  const [progressTitle, setProgressTitle] = useState("Publicando noticia");
+
+  const updateProgress: ProgressUpdater = (p) =>
+    setProgress((prev) => ({ ...prev, ...p }));
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -118,6 +154,8 @@ const NewsManager = () => {
       toast({ title: "Campos requeridos", description: "Título y contenido son obligatorios.", variant: "destructive" });
       return;
     }
+    setProgressTitle("Publicando noticia");
+    setProgress({ stage: "creating", percent: 0, totalFiles: files.length });
     setSaving(true);
 
     const { data: created, error: insertError } = await (supabase as any)
@@ -139,16 +177,20 @@ const NewsManager = () => {
 
     let uploaded: string[] = [];
     try {
-      const { uploadedPaths, rows } = await uploadFiles(created.id, files, 0);
+      updateProgress({ stage: "uploading", percent: 0, totalFiles: files.length });
+      const { uploadedPaths, rows } = await uploadFiles(created.id, files, 0, updateProgress);
       uploaded = uploadedPaths;
       if (rows.length > 0) {
+        updateProgress({ stage: "registering", percent: 100 });
         const { error: mErr } = await (supabase as any).from("news_media").insert(rows);
         if (mErr) throw mErr;
       }
 
+      updateProgress({ stage: "finalizing", percent: 100 });
       toast({ title: "Noticia publicada" });
       resetForm();
       await fetchItems();
+      updateProgress({ stage: "done", percent: 100 });
     } catch {
       if (uploaded.length > 0) await supabase.storage.from(BUCKET).remove(uploaded);
       await (supabase as any).from("news").delete().eq("id", created.id);
@@ -190,7 +232,6 @@ const NewsManager = () => {
     });
     setEditFiles([]);
     setEditFileKey((k) => k + 1);
-    // Load signed URLs for previews
     const media: NewsMedia[] = [];
     for (const m of item.news_media) {
       const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(m.storage_path, 60 * 60);
@@ -219,12 +260,9 @@ const NewsManager = () => {
   };
 
   const makeCover = async (media: NewsMedia) => {
-    // Swap position with current position-0 media
     try {
       const others = editMedia.filter((m) => m.id !== media.id);
-      // Update target to position 0
       await (supabase as any).from("news_media").update({ position: 0 }).eq("id", media.id);
-      // Shift others to positions 1..n
       for (let i = 0; i < others.length; i++) {
         await (supabase as any).from("news_media").update({ position: i + 1 }).eq("id", others[i].id);
       }
@@ -242,6 +280,8 @@ const NewsManager = () => {
       toast({ title: "Campos requeridos", description: "Título y contenido son obligatorios.", variant: "destructive" });
       return;
     }
+    setProgressTitle("Actualizando noticia");
+    setProgress({ stage: "creating", percent: 0, totalFiles: editFiles.length });
     setSavingEdit(true);
     try {
       const { error: uErr } = await (supabase as any)
@@ -259,8 +299,10 @@ const NewsManager = () => {
         const startPos = editMedia.length > 0
           ? Math.max(...editMedia.map((m) => m.position)) + 1
           : 0;
-        const { rows, uploadedPaths } = await uploadFiles(editingId, editFiles, startPos);
+        updateProgress({ stage: "uploading", percent: 0, totalFiles: editFiles.length });
+        const { rows, uploadedPaths } = await uploadFiles(editingId, editFiles, startPos, updateProgress);
         if (rows.length > 0) {
+          updateProgress({ stage: "registering", percent: 100 });
           const { error: mErr } = await (supabase as any).from("news_media").insert(rows);
           if (mErr) {
             await supabase.storage.from(BUCKET).remove(uploadedPaths);
@@ -269,9 +311,11 @@ const NewsManager = () => {
         }
       }
 
+      updateProgress({ stage: "finalizing", percent: 100 });
       toast({ title: "Noticia actualizada" });
       cancelEdit();
       await fetchItems();
+      updateProgress({ stage: "done", percent: 100 });
     } catch {
       toast({ title: "Error", description: "No se pudo actualizar.", variant: "destructive" });
     } finally {
@@ -281,6 +325,8 @@ const NewsManager = () => {
 
   return (
     <section className="bg-card rounded-xl p-6 border border-border shadow-sm">
+      <UploadProgressModal open={saving || savingEdit} title={progressTitle} progress={progress} />
+
       <div className="mb-6">
         <p className="text-sm text-accent font-semibold uppercase tracking-wider">Noticias</p>
         <h2 className="font-display text-2xl font-bold text-foreground mt-2">Publicar noticia o actividad</h2>

@@ -10,6 +10,7 @@ import { HashRouter } from "react-router-dom";
 import Index from "./pages/Index";
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Institucion from "./pages/Nosotros";
 import Autoridades from "./pages/Autoridades";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/noticias/:id" element={<NoticiaDetalle />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

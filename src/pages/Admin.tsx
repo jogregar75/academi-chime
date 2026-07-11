@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
   GraduationCap, LogOut, Loader2, ArrowLeft,
-  ClipboardList, CalendarDays, Users, UserCog, Network, Award, Newspaper,
+  ClipboardList, CalendarDays, Users, UserCog, Network, Award, Newspaper, ShieldCheck,
 } from "lucide-react";
 import { isAdminUser } from "@/lib/admin-auth";
 import WeeklyTasksManager from "@/components/admin/WeeklyTasksManager";
@@ -16,10 +16,11 @@ import CoordinatorsManager from "@/components/admin/CoordinatorsManager";
 import TeachersManager from "@/components/admin/TeachersManager";
 import PromosManager from "@/components/admin/PromosManager";
 import NewsManager from "@/components/admin/NewsManager";
+import UsersManager from "@/components/admin/UsersManager";
 
 type SectionKey =
   | "tareas" | "actividades" | "autoridades" | "coordinadores"
-  | "docentes" | "organigrama" | "promos" | "noticias";
+  | "docentes" | "organigrama" | "promos" | "noticias" | "usuarios";
 
 const SECTIONS: { key: SectionKey; title: string; description: string; icon: React.ElementType; color: string }[] = [
   { key: "noticias", title: "Noticias", description: "Noticias, actos y actividades con fotos/videos", icon: Newspaper, color: "bg-indigo-500" },
@@ -30,6 +31,7 @@ const SECTIONS: { key: SectionKey; title: string; description: string; icon: Rea
   { key: "docentes", title: "Docentes", description: "Profesores y secciones", icon: GraduationCap, color: "bg-rose-500" },
   { key: "organigrama", title: "Organigrama", description: "Imagen institucional", icon: Network, color: "bg-cyan-500" },
   { key: "promos", title: "Promociones", description: "Logos de promociones", icon: Award, color: "bg-orange-500" },
+  { key: "usuarios", title: "Usuarios", description: "Administradores con acceso al panel", icon: ShieldCheck, color: "bg-slate-600" },
 ];
 
 const renderSection = (key: SectionKey) => {
@@ -42,6 +44,7 @@ const renderSection = (key: SectionKey) => {
     case "docentes": return <TeachersManager />;
     case "organigrama": return <OrgChartManager />;
     case "promos": return <PromosManager />;
+    case "usuarios": return <UsersManager />;
   }
 };
 

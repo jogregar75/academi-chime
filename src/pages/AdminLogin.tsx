@@ -4,7 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, LogIn, Loader2 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { GraduationCap, LogIn, Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isAdminUser } from "@/lib/admin-auth";
 
@@ -12,6 +15,9 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [sendingReset, setSendingReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -19,25 +25,19 @@ const AdminLogin = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-
       const isAdmin = await isAdminUser(session.user.id);
-      if (isAdmin) {
-        navigate("/admin");
-      } else {
-        await supabase.auth.signOut();
-      }
+      if (isAdmin) navigate("/admin");
+      else await supabase.auth.signOut();
     };
     void checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!session) return;
-
-      const isAdmin = await isAdminUser(session.user.id);
-      if (isAdmin) {
-        navigate("/admin");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Don't hijack the recovery flow — let ResetPassword handle it.
+      if (event === "PASSWORD_RECOVERY") return;
+      if (session) {
+        void isAdminUser(session.user.id).then((ok) => { if (ok) navigate("/admin"); });
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
@@ -62,8 +62,25 @@ const AdminLogin = () => {
       toast({ title: "Acceso denegado", description: "Este usuario no tiene permisos de administrador.", variant: "destructive" });
       return;
     }
-
     navigate("/admin");
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+    setSendingReset(true);
+    const redirectTo = `${window.location.origin}/#/reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase(), { redirectTo });
+    setSendingReset(false);
+    // Never reveal whether the email exists.
+    toast({
+      title: "Revisa tu correo",
+      description: "Si el correo está registrado, recibirás un enlace para restablecer la contraseña.",
+    });
+    if (!error) {
+      setForgotOpen(false);
+      setForgotEmail("");
+    }
   };
 
   return (
@@ -78,26 +95,19 @@ const AdminLogin = () => {
         <form onSubmit={handleLogin} className="bg-card rounded-xl p-8 shadow-lg space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@colegio.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              maxLength={255}
-            />
+            <Input id="email" type="email" placeholder="admin@colegio.edu"
+              value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Contraseña</Label>
+              <button type="button" onClick={() => { setForgotEmail(email); setForgotOpen(true); }}
+                className="text-xs text-accent hover:underline">
+                ¿Olvidó su contraseña?
+              </button>
+            </div>
+            <Input id="password" type="password" placeholder="••••••••"
+              value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <Button type="submit" className="w-full gap-2" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
@@ -110,6 +120,33 @@ const AdminLogin = () => {
           </div>
         </form>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recuperar contraseña</DialogTitle>
+            <DialogDescription>
+              Ingresa el correo asociado a tu cuenta y te enviaremos un enlace para restablecer la contraseña.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgot} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="forgot-email">Correo electrónico</Label>
+              <Input id="forgot-email" type="email" value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)} required maxLength={255} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setForgotOpen(false)} disabled={sendingReset}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={sendingReset} className="gap-2">
+                {sendingReset ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                Enviar enlace
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -52,6 +52,74 @@ export type Database = {
           },
         ]
       }
+      announcement_files: {
+        Row: {
+          announcement_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+        }
+        Insert: {
+          announcement_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+        }
+        Update: {
+          announcement_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_files_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          published_at: string
+          title: string
+          updated_at: string
+          urgent: boolean
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          published_at?: string
+          title: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          published_at?: string
+          title?: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Relationships: []
+      }
       authorities: {
         Row: {
           created_at: string

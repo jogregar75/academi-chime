@@ -7,6 +7,11 @@ import {
   GraduationCap, LogOut, Loader2, ArrowLeft,
   ClipboardList, CalendarDays, Users, UserCog, Network, Award, Newspaper, ShieldCheck,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { isAdminUser } from "@/lib/admin-auth";
 import WeeklyTasksManager from "@/components/admin/WeeklyTasksManager";
 import SchoolActivitiesManager from "@/components/admin/SchoolActivitiesManager";
